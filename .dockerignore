@@ -1,0 +1,8 @@
+venv
+data
+tests
+__pycache__
+*.pyc
+credentials.json
+.env
+migration_report.json

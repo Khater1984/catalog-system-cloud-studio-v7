@@ -1,0 +1,35 @@
+<!doctype html><html dir="rtl" lang="ar"><head><base target="_top"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+body{font-family:Tahoma,Arial,sans-serif;margin:0;background:#f4f6fa;color:#1d2433}
+header{background:#1F3864;color:#fff;padding:12px 16px;display:flex;gap:10px;flex-wrap:wrap}
+input,select{padding:7px;border-radius:6px;border:0;font:inherit}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;padding:14px}
+.card{background:#fff;border-radius:10px;padding:10px;cursor:pointer;box-shadow:0 1px 3px #0002}
+.card img{width:100%;height:140px;object-fit:contain;background:#fff}
+.code{font-weight:bold;direction:ltr;text-align:left}.sub{font-size:12px;color:#667}
+#detail{display:none;position:fixed;inset:0;background:#fffe;overflow:auto;padding:16px}
+#detail .box{max-width:720px;margin:auto;background:#fff;border-radius:12px;padding:16px;box-shadow:0 2px 12px #0003}
+#detail img{max-width:100%;max-height:300px;display:block;margin:auto}
+table{width:100%;border-collapse:collapse;direction:ltr}td{padding:6px;border-bottom:1px solid #e3e7ef}td:first-child{font-weight:bold;width:40%}
+</style></head><body>
+<header><b>📚 الكتالوج</b><input id="q" placeholder="بحث..." oninput="render()"><select id="fam" onchange="render()"><option value="">كل المجموعات</option></select></header>
+<div id="grid">جارٍ التحميل...</div>
+<div id="detail" onclick="this.style.display='none'"><div class="box" onclick="event.stopPropagation()">
+<button onclick="document.getElementById('detail').style.display='none'">إغلاق</button><div id="dbody"></div></div></div>
+<script>
+var DATA=[];
+google.script.run.withSuccessHandler(function(d){DATA=d;var f={};d.forEach(function(m){if(m.family)f[m.family]=1});
+ var s=document.getElementById('fam');Object.keys(f).sort().forEach(function(k){var o=document.createElement('option');o.value=o.text=k;s.add(o)});render();}).getCatalog();
+function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function render(){var q=document.getElementById('q').value.toLowerCase(),f=document.getElementById('fam').value,g=document.getElementById('grid');g.innerHTML='';
+ DATA.filter(function(m){return (!f||m.family===f)&&(!q||(m.code+' '+m.series+' '+m.arName).toLowerCase().indexOf(q)>=0)}).forEach(function(m){
+  var d=document.createElement('div');d.className='card';d.onclick=function(){show(m)};
+  d.innerHTML='<img id="t'+m.id+'"><div class="code">'+esc(m.code)+'</div><div class="sub">'+esc(m.arName||m.product||m.series)+'</div>';g.appendChild(d);
+  if(m.image)google.script.run.withSuccessHandler(function(u){var i=document.getElementById('t'+m.id);if(i)i.src=u}).getImage(m.image,false)});}
+function show(m){var b=document.getElementById('dbody');
+ b.innerHTML='<h2 style="direction:ltr;text-align:left">'+esc(m.code)+'</h2><div class="sub">'+esc(m.arName||'')+' '+esc(m.series)+'</div><img id="big"><table>'+
+  m.specs.map(function(s){return '<tr><td>'+esc(s[0])+'</td><td>'+esc(s[1])+'</td></tr>'}).join('')+'</table>';
+ document.getElementById('detail').style.display='block';
+ if(m.image)google.script.run.withSuccessHandler(function(u){document.getElementById('big').src=u}).getImage(m.image,true)}
+</script></body></html>
